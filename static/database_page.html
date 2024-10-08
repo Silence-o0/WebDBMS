@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #data-table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        #data-table th, #data-table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            min-width: 100px;
+        }
+
+        #data-table th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        #row-actions {
+            margin-right: 10px;
+        }
+
+        #row-actions div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            height: auto;
+            margin-bottom: 2px;
+        }
+
+        .action-btn {
+            width: 30px;
+            height: 30px;
+            margin-right: 5px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: #d3d3d3;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Manage Database</h2>
+
+    <div class="form-group">
+        <label for="table-select">Select Table:</label>
+        <select class="form-control" id="table-select">
+            <option value="">-- Select or Create a Table --</option>
+            <option value="create">+ Create New Table</option>
+        </select>
+    </div>
+
+    <div class="form-group" id="create-table-container" style="display: none;">
+        <label for="table-name">Enter Table Name:</label>
+        <input type="text" class="form-control" id="table-name" placeholder="Enter table name">
+        <button class="btn btn-success mt-2" id="confirm-create-table">Create Table</button>
+    </div>
+
+    <div class="btn-toolbar mb-3 mt-2" role="toolbar">
+        <div class="btn-group mr-2" role="group">
+            <button class="btn btn-primary" id="add-column-btn">Add Column</button>
+            <button id="add-row-btn" class="btn btn-primary">Add Row</button>
+            <button class="btn btn-danger" id="delete-table-btn" onclick="deleteTable()">Delete Table</button>
+        </div>
+        <div class="btn-group" role="group">
+            <button class="btn btn-secondary" id="find-difference-btn">Find Table Difference</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addColumnModal" tabindex="-1" aria-labelledby="addColumnModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addColumnModalLabel">Add Column</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-column-form">
+                        <div class="form-group">
+                            <label for="column-name">Column Name</label>
+                            <input type="text" class="form-control" id="column-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="column-type">Column Type</label>
+                            <select class="form-control" id="column-type">
+                                <option value="integer">Integer</option>
+                                <option value="real">Real</option>
+                                <option value="char">Char</option>
+                                <option value="string">String</option>
+                                <option value="time">Time</option>
+                                <option value="timeInvl">Time Interval</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Column</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addRowModal" tabindex="-1" aria-labelledby="addRowModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRowModalLabel">Add Row</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-row-form">
+                        <div id="form-fields"></div>
+                        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="table-container" style="display: flex; align-items: flex-start;">
+        <div id="row-actions" style="margin-right: 10px;">
+            <div data-row-id="None" style="display: flex; align-items: center; height: 41px; margin-bottom: 2px;">
+                <button class="action-btn" style="visibility: hidden">D</button>
+                <button class="action-btn" style="visibility: hidden">E</button>
+            </div>
+        </div>
+        <table id="data-table">
+            <thead id="table-header"></thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="compareTablesModal" tabindex="-1" aria-labelledby="compareTablesModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="compareTablesModalLabel">Select Tables</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="compare-tables-form">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="mb-3 w-40">
+                                <select id="table1Select" class="form-select"></select>
+                            </div>
+                            <div class="mb-3">
+                                <span style="font-size: 24px;">\</span>
+                            </div>
+                            <div class="mb-3 w-40">
+                                <select id="table2Select" class="form-select"></select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="compareTablesSubmit">Compare</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="comparisonResultModal" tabindex="-1" aria-labelledby="comparisonResultModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="comparisonResultModalLabel">Comparison Result</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead id="comparison-table-header"></thead>
+                        <tbody id="comparison-table-body"></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/database_page_script.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
