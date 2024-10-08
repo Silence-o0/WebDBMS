@@ -377,10 +377,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         addRowForm.appendChild(div);
                     });
                 } else {
-                    throw new Error('Error fetching row data');
+                    const errorRowData = await rowResponse.json();
+                    alert(errorRowData.detail)
                 }
             } else {
-                throw new Error('Error fetching columns');
+                const errorColData = await columnsResponse.json();
+                alert(errorColData.detail)
             }
 
             const submitButton = createSubmitButton(rowId);
@@ -388,6 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             $('#addRowModal').modal('show');
         } catch (error) {
+            alert(error)
             console.error('Error:', error);
         }
     }

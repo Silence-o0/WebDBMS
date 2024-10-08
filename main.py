@@ -269,7 +269,7 @@ def edit_row(db_name: str, table_name: str, row_id: str, row_data: RowModel):
         save_database_to_file(db_name)
         return {"message": "Рядок успішно відредагований."}
 
-    except (ValueError, AttributeError) as e:
+    except (ValueError, AttributeError, ValidError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 

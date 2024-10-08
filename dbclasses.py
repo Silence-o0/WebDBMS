@@ -43,10 +43,13 @@ class Row:
                 print(f"Колонка '{key}' не знайдена у таблиці.")
                 return False
             if self.column_types[key] == Type.timeInvl:
-                both_val = value.split('-')
-                if both_val[0] != "" or both_val[1] != "":
-                    is_all_none = False
-                    demo_row.values[key] = value
+                if value != '' and value is not None:
+                    both_val = value.split('-')
+                    if both_val[0] != "" or both_val[1] != "":
+                        is_all_none = False
+                        demo_row.values[key] = value
+                    else:
+                        demo_row.values[key] = None
                 else:
                     demo_row.values[key] = None
             elif self.column_types[key] == Type.string:
